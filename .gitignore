@@ -2,3 +2,7 @@
 data/
 
 *.swp
+
+\.project
+
+\.pydevproject
