@@ -1,5 +1,3 @@
-#Bilingual_Lexicon_Learning
-
 ## Download Links
 * Wikipedia comparable corporas https://linguatools.org/tools/corpora/wikipedia-comparable-corpora/
  
@@ -10,3 +8,4 @@
 ## Python packages
 
 * nltk
+* googletrans
