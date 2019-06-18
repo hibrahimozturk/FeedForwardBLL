@@ -7,6 +7,7 @@ import string
 from nltk.corpus import stopwords
 from googletrans import Translator
 import numpy as np
+import json
 
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
@@ -59,7 +60,7 @@ def get_words():
 
 def translate_en_it(en_words):
     it_words = set()
-    en_it_pairs = {}
+    en_it_pairs = []
     translator = Translator()
     for en_word in en_words:
         translated = translator.translate(en_word, 'it', 'en')
@@ -70,30 +71,55 @@ def translate_en_it(en_words):
             for possible_translation in  translated.extra_data['possible-translations'][0][2]:
                 if len(possible_translation[0].split()) == 1:
                     it_words.add(possible_translation[0])
-                    en_it_pairs[en_word] = possible_translation[0]
+                    en_it_pairs.append([en_word, possible_translation[0].lower() ])
                     break
         elif len(translated.text.split()) == 1:
             it_words.add(translated.text)
-            en_it_pairs[en_word] = translated.text
+            en_it_pairs.append([en_word, translated.text.lower() ])
     return it_words, en_it_pairs
 
 def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
     
-    num_of_instance = len(word_list)
-    indexes = np.arange(num_of_instance)
+    dataset_size = len(word_list)
+    indexes = np.arange(dataset_size)
     np.random.shuffle(indexes)
-    num_of_vals = int(split_ratio*num_of_instance)
-    val_indexes = indexes[:num_of_vals]
-    train_indexes = indexes[num_of_vals:]
     
-    return
+    test_size = int(test_ratio*dataset_size)
+    train_size = dataset_size - test_size
+    test_indexes = indexes[:test_size]
+    
+    # validation set size is calculated from training set size
+    trainval_indexes = indexes[test_size:]
+    val_size = int(val_ratio*train_size)
+    val_indexes = trainval_indexes[:val_size]
+    train_indexes = trainval_indexes[val_size:]
+    
+    train_set = [word_list[i] for i in train_indexes]
+    val_set = [word_list[i] for i in val_indexes]
+    test_set = [word_list[i] for i in test_indexes]
+    
+    return train_set, val_set, test_set
 
 
 if __name__ == '__main__':
     
 #     nltk.download()
     en_words = get_words()
+    it_words, en_it_pairs = translate_en_it(en_words)
+    train_set, val_set, test_set = split_dataset(en_it_pairs)
+    
+    print("Training set size: {}".format(len(train_set)))
+    print("Validation set size: {}".format(len(val_set)))
+    print("Test set size: {}".format(len(test_set)))
 
-            
+    
+    with open('wikicomp_train_set.json', 'w') as fp:
+        fp.write(json.dumps(train_set))
+        
+    with open('wikicomp_val_set.json', 'w') as fp:
+        fp.write(json.dumps(val_set))
+        
+    with open('wikicomp_test_set.json', 'w') as fp:
+        fp.write(json.dumps(test_set))
             
     print("finish")
