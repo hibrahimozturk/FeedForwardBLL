@@ -6,7 +6,8 @@ import re
 import string 
 from nltk.corpus import stopwords
 from googletrans import Translator
- 
+import numpy as np
+
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
     cleantext = re.sub(cleanr, '', raw_html)
@@ -40,11 +41,14 @@ def get_words():
                     content = cleanhtml(line)
                     content = preprocess_text(content)
                     words = word_tokenize(content)
-                    words = result = [i for i in words if not i in stop_words]
+                    words = [i for i in words if not i in stop_words]
                     for word in words:
                         stem = lemmatizer.lemmatize(word)
-                        print("{} : {}".format(word, stem))
+#                         print("{} : {}".format(word, stem))
                         lemmas.add(stem)
+                        
+                        if len(lemmas) > 100:
+                            return lemmas
                     
                 if '<content' in line: # start of content
                     is_content = True 
@@ -53,10 +57,7 @@ def get_words():
                 is_english = True
     return lemmas
 
-if __name__ == '__main__':
-    
-#     nltk.download()
-    en_words = get_words()
+def translate_en_it(en_words):
     it_words = set()
     en_it_pairs = {}
     translator = Translator()
@@ -74,8 +75,25 @@ if __name__ == '__main__':
         elif len(translated.text.split()) == 1:
             it_words.add(translated.text)
             en_it_pairs[en_word] = translated.text
+    return it_words, en_it_pairs
+
+def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
+    
+    num_of_instance = len(word_list)
+    indexes = np.arange(num_of_instance)
+    np.random.shuffle(indexes)
+    num_of_vals = int(split_ratio*num_of_instance)
+    val_indexes = indexes[:num_of_vals]
+    train_indexes = indexes[num_of_vals:]
+    
+    return
+
+
+if __name__ == '__main__':
+    
+#     nltk.download()
+    en_words = get_words()
+
             
-#             translated.extra_data['possible-translations'][0][2][2][0]
-        
-        
+            
     print("finish")
