@@ -5,11 +5,10 @@ from nltk.tokenize import word_tokenize
 import re
 import string 
 from nltk.corpus import stopwords
-# from googletrans import Translator
 import numpy as np
 import json
 import random
-from translate import Translator
+from google.cloud import translate
 
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
@@ -52,7 +51,7 @@ def get_words():
                         if stem != "":
                             lemmas.add(stem)
                         
-                        if len(lemmas) > 1000: #test on small portion
+                        if len(lemmas) >= 100000: #test on small portion
                             return lemmas
                     
                 if '<content' in line: # start of content
@@ -64,27 +63,28 @@ def get_words():
 
 def translate_en_it(en_words, split_set = 'train'):
     train_pairs = {'en_words':set(), 'it_words':set(), 'translation_pairs':[]}
-    translator= Translator(from_lang="english",to_lang="italian")
-
+#     translator= Translator(from_lang="english",to_lang="italian")
+    translate_client = translate.Client()
+    num_of_chars = 0
     for i,en_word in enumerate(en_words):
-        translated = translator.translate(en_word)
-        translations = translated.split(',')
+        translation = translate_client.translate(en_word, target_language='it')
+        num_of_chars += len(en_word)
         
-        if translations[0].lower() == en_word: # not translated
+        if translation['translatedText'].lower() == en_word: # not translated
             continue        
-        print(translations[0])
-        for translation in translations:
-            if len(translation.split()) == 1:
-                train_pairs['it_words'].add(translated.lower().strip())
-                train_pairs['translation_pairs'].append([en_word, translated.lower().strip() ])
-                train_pairs['en_words'].add(en_word)
-                break
+        if len(translation['translatedText'].split()) == 1:
+            train_pairs['it_words'].add(translation['translatedText'].lower().strip())
+            train_pairs['translation_pairs'].append([en_word, translation['translatedText'].lower().strip() ])
+            train_pairs['en_words'].add(en_word)
                 
         if i%100 == 0: # backup translations, there is a limit of translations in google translate
             with open(split_set + '_'+'wikicomp_pairs.json', 'w') as fp:
                 save_pairs = {'en_words':list(train_pairs['en_words']), 'it_words':list(train_pairs['it_words']), 'translation_pairs':train_pairs['translation_pairs']}
                 fp.write(json.dumps(save_pairs))   
-                print("{} translations completed".format(i))
+                print("{} translations completed in {}".format(i, split_set))
+                print("{} num of chars translated in {}".format(num_of_chars, split_set))
+                print()
+
         
     return train_pairs
 
@@ -140,19 +140,15 @@ if __name__ == '__main__':
 
     val_pairs = translate_en_it(val_set, split_set='val')
     print("Number of val pairs: {}".format(len(val_pairs['translation_pairs'])))
-    
+     
     test_pairs = translate_en_it(test_set, split_set='test')
     print("Number of test pairs: {}".format(len(test_pairs['translation_pairs'])))
-
+ 
     train_annotations = create_annotations(train_pairs)
     val_annotations = create_annotations(val_pairs)
     test_annotations = create_annotations(test_pairs)
     
-#     print("Training set size: {}".format(len(train_set)))
-#     print("Validation set size: {}".format(len(val_set)))
-#     print("Test set size: {}".format(len(test_set)))
-# 
-#     
+
     with open('wikicomp_train_set.json', 'w') as fp:
         fp.write(json.dumps(train_annotations))
          

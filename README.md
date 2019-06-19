@@ -10,7 +10,7 @@
 ## Python packages
 
 * nltk
-* googletrans
+* google-cloud-translate
 * numpy
 * gensim
 
