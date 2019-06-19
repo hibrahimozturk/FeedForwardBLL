@@ -46,10 +46,11 @@ def get_words():
                     for word in words:
                         stem = lemmatizer.lemmatize(word)
 #                         print("{} : {}".format(word, stem))
-                        lemmas.add(stem)
+                        if stem != "":
+                            lemmas.add(stem)
                         
-                        if len(lemmas) > 100:
-                            return lemmas
+#                         if len(lemmas) > 100: #test on small portion
+#                             return lemmas
                     
                 if '<content' in line: # start of content
                     is_content = True 
@@ -62,8 +63,8 @@ def translate_en_it(en_words):
     it_words = set()
     en_it_pairs = []
     translator = Translator()
-    for en_word in en_words:
-        translated = translator.translate(en_word, 'it', 'en')
+    for i,en_word in enumerate(en_words):
+        translated = translator.translate(en_word, dest='it', src='en')
         if translated.text == en_word: # not translated
             continue
         
@@ -76,6 +77,11 @@ def translate_en_it(en_words):
         elif len(translated.text.split()) == 1:
             it_words.add(translated.text)
             en_it_pairs.append([en_word, translated.text.lower() ])
+            
+        if i%100 == 0: # backup translations, there is a limit of translations in google translate
+            with open('wikicomp_pairs.json', 'w') as fp:
+                fp.write(json.dumps(train_set))   
+        
     return it_words, en_it_pairs
 
 def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
@@ -105,7 +111,11 @@ if __name__ == '__main__':
     
 #     nltk.download()
     en_words = get_words()
+    print("Number of english words: {}".format(len(en_words)))
+
     it_words, en_it_pairs = translate_en_it(en_words)
+    print("Number of pairs: {}".format(len(en_it_pairs)))
+
     train_set, val_set, test_set = split_dataset(en_it_pairs)
     
     print("Training set size: {}".format(len(train_set)))
