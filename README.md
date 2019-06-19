@@ -3,13 +3,16 @@
  
 * Wikipedia corpora english-italian download link: https://www.dropbox.com/s/jjkfn7v19tnxnww/wikicomp-2014_enit.xml.bz2?dl=0
 
-* Python gensim word2vec italian language models http://hlt.isti.cnr.it/wordembeddings/glove_wiki_window10_size300_iteration50.tar.gz
+* Python gensim word2vec italian language model http://hlt.isti.cnr.it/wordembeddings/skipgram_wiki_window10_size300_neg-samples10.tar.gz
+
+* Python gensim word2vec english language model https://drive.google.com/file/d/0B7XkCwpI5KDYNlNUTTlSS21pQmM/edit
 
 ## Python packages
 
 * nltk
 * googletrans
 * numpy
+* gensim
 
 ## Dataset Format
 

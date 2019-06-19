@@ -8,6 +8,7 @@ from nltk.corpus import stopwords
 from googletrans import Translator
 import numpy as np
 import json
+from _operator import ne
 
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
@@ -59,10 +60,10 @@ def get_words():
                 is_english = True
     return lemmas
 
-def translate_en_it(en_words):
-    it_words = set()
-    en_it_pairs = []
+def translate_en_it(en_words, split_set = 'train'):
+    en_it_pairs = {'en_words':set(), 'it_words':set(), 'translation_pairs':[]}
     translator = Translator()
+    
     for i,en_word in enumerate(en_words):
         translated = translator.translate(en_word, dest='it', src='en')
         if translated.text == en_word: # not translated
@@ -71,18 +72,20 @@ def translate_en_it(en_words):
         if len(translated.text.split()) > 1: # translated should be word not phrase
             for possible_translation in  translated.extra_data['possible-translations'][0][2]:
                 if len(possible_translation[0].split()) == 1:
-                    it_words.add(possible_translation[0])
-                    en_it_pairs.append([en_word, possible_translation[0].lower() ])
+                    en_it_pairs['it_words'].add(possible_translation[0])
+                    en_it_pairs['translation_pairs'].append([en_word, possible_translation[0].lower() ])
+                    en_it_pairs['en_words'].add(en_word)
                     break
         elif len(translated.text.split()) == 1:
-            it_words.add(translated.text)
-            en_it_pairs.append([en_word, translated.text.lower() ])
+            en_it_pairs['it_words'].add(translated.text)
+            en_it_pairs['translation_pairs'].append([en_word, translated.text.lower() ])
+            en_it_pairs['en_words'].add(en_word)
             
         if i%100 == 0: # backup translations, there is a limit of translations in google translate
-            with open('wikicomp_pairs.json', 'w') as fp:
+            with open(split_set + '_'+'wikicomp_pairs.json', 'w') as fp:
                 fp.write(json.dumps(train_set))   
         
-    return it_words, en_it_pairs
+    return en_it_pairs
 
 def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
     
@@ -113,10 +116,12 @@ if __name__ == '__main__':
     en_words = get_words()
     print("Number of english words: {}".format(len(en_words)))
 
+    train_set, val_set, test_set = split_dataset(list(en_words))
+
+    
     it_words, en_it_pairs = translate_en_it(en_words)
     print("Number of pairs: {}".format(len(en_it_pairs)))
 
-    train_set, val_set, test_set = split_dataset(en_it_pairs)
     
     print("Training set size: {}".format(len(train_set)))
     print("Validation set size: {}".format(len(val_set)))
