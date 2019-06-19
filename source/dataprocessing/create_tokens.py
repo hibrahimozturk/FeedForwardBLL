@@ -19,6 +19,8 @@ def preprocess_text(input_str):
     input_str = input_str.lower()
     input_str = re.sub(r'\d+', '', input_str)
     input_str = re.sub(r'–', '', input_str)
+    input_str = re.sub(r'\u2014', '', input_str)
+
     input_str = input_str.translate(str.maketrans('', '', string.punctuation))
     input_str = input_str.strip()
     return input_str
@@ -51,7 +53,7 @@ def get_words():
                         if stem != "":
                             lemmas.add(stem)
                         
-                        if len(lemmas) >= 100000: #test on small portion
+                        if len(lemmas) >= 50000: #test on small portion
                             return lemmas
                     
                 if '<content' in line: # start of content
@@ -67,20 +69,34 @@ def translate_en_it(en_words, split_set = 'train'):
     translate_client = translate.Client()
     num_of_chars = 0
     for i,en_word in enumerate(en_words):
-        translation = translate_client.translate(en_word, target_language='it')
-        num_of_chars += len(en_word)
-        
-        if translation['translatedText'].lower() == en_word: # not translated
-            continue        
-        if len(translation['translatedText'].split()) == 1:
-            train_pairs['it_words'].add(translation['translatedText'].lower().strip())
-            train_pairs['translation_pairs'].append([en_word, translation['translatedText'].lower().strip() ])
-            train_pairs['en_words'].add(en_word)
+
+#         en_word = en_word.encode('utf-8', errors='ignore')
+
+        lang_detection = translate_client.detect_language(en_word)
+        if lang_detection['language'] != "en":
+            continue   
+          
+        try:
+            en_word = str(en_word.encode('iso-8859-1'), encoding='iso-8859-1', errors='strict')
+            
+            translation = translate_client.translate(en_word, target_language='it')
+            num_of_chars += len(en_word)
+    
+            if translation['translatedText'].lower() == en_word.lower(): # not translated
+                continue 
+           
+            if len(translation['translatedText'].split()) == 1:
+                train_pairs['it_words'].add(translation['translatedText'].lower().strip())
+                train_pairs['translation_pairs'].append([en_word, translation['translatedText'].lower().strip() ])
+                train_pairs['en_words'].add(en_word)
+        except:
+            print("Except")
+            continue
                 
         if i%100 == 0: # backup translations, there is a limit of translations in google translate
-            with open(split_set + '_'+'wikicomp_pairs.json', 'w') as fp:
+            with codecs.open(split_set + '_'+'wikicomp_pairs.json', "w", "ISO-8859-1") as fp:
                 save_pairs = {'en_words':list(train_pairs['en_words']), 'it_words':list(train_pairs['it_words']), 'translation_pairs':train_pairs['translation_pairs']}
-                fp.write(json.dumps(save_pairs))   
+                fp.write(json.dumps(save_pairs, sort_keys=True, indent=4, ensure_ascii=False))   
                 print("{} translations completed in {}".format(i, split_set))
                 print("{} num of chars translated in {}".format(num_of_chars, split_set))
                 print()
@@ -88,7 +104,7 @@ def translate_en_it(en_words, split_set = 'train'):
         
     return train_pairs
 
-def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
+def split_dataset(word_list, val_ratio=0.2, test_ratio=0.05):
     
     dataset_size = len(word_list)
     indexes = np.arange(dataset_size)
@@ -149,13 +165,13 @@ if __name__ == '__main__':
     test_annotations = create_annotations(test_pairs)
     
 
-    with open('wikicomp_train_set.json', 'w') as fp:
-        fp.write(json.dumps(train_annotations))
+    with codecs.open('wikicomp_train_set.json', 'w', "ISO-8859-1") as fp:
+        fp.write(json.dumps(train_annotations, sort_keys=True, indent=4, ensure_ascii=False))
          
-    with open('wikicomp_val_set.json', 'w') as fp:
-        fp.write(json.dumps(val_annotations))
+    with codecs.open('wikicomp_val_set.json', 'w', "ISO-8859-1") as fp:
+        fp.write(json.dumps(val_annotations, sort_keys=True, indent=4, ensure_ascii=False))
          
-    with open('wikicomp_test_set.json', 'w') as fp:
-        fp.write(json.dumps(test_annotations))
+    with codecs.open('wikicomp_test_set.json', 'w', "ISO-8859-1") as fp:
+        fp.write(json.dumps(test_annotations, sort_keys=True, indent=4, ensure_ascii=False))
             
     print("finish")
