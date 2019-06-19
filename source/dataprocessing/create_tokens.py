@@ -1,14 +1,15 @@
 import nltk
 import codecs
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import word_tokenize
 import re
 import string 
 from nltk.corpus import stopwords
-from googletrans import Translator
+# from googletrans import Translator
 import numpy as np
 import json
-from _operator import ne
+import random
+from translate import Translator
 
 def cleanhtml(raw_html):
     cleanr = re.compile('<.*?>')
@@ -18,6 +19,7 @@ def cleanhtml(raw_html):
 def preprocess_text(input_str):
     input_str = input_str.lower()
     input_str = re.sub(r'\d+', '', input_str)
+    input_str = re.sub(r'–', '', input_str)
     input_str = input_str.translate(str.maketrans('', '', string.punctuation))
     input_str = input_str.strip()
     return input_str
@@ -50,8 +52,8 @@ def get_words():
                         if stem != "":
                             lemmas.add(stem)
                         
-#                         if len(lemmas) > 100: #test on small portion
-#                             return lemmas
+                        if len(lemmas) > 1000: #test on small portion
+                            return lemmas
                     
                 if '<content' in line: # start of content
                     is_content = True 
@@ -61,31 +63,30 @@ def get_words():
     return lemmas
 
 def translate_en_it(en_words, split_set = 'train'):
-    en_it_pairs = {'en_words':set(), 'it_words':set(), 'translation_pairs':[]}
-    translator = Translator()
-    
+    train_pairs = {'en_words':set(), 'it_words':set(), 'translation_pairs':[]}
+    translator= Translator(from_lang="english",to_lang="italian")
+
     for i,en_word in enumerate(en_words):
-        translated = translator.translate(en_word, dest='it', src='en')
-        if translated.text == en_word: # not translated
-            continue
+        translated = translator.translate(en_word)
+        translations = translated.split(',')
         
-        if len(translated.text.split()) > 1: # translated should be word not phrase
-            for possible_translation in  translated.extra_data['possible-translations'][0][2]:
-                if len(possible_translation[0].split()) == 1:
-                    en_it_pairs['it_words'].add(possible_translation[0])
-                    en_it_pairs['translation_pairs'].append([en_word, possible_translation[0].lower() ])
-                    en_it_pairs['en_words'].add(en_word)
-                    break
-        elif len(translated.text.split()) == 1:
-            en_it_pairs['it_words'].add(translated.text)
-            en_it_pairs['translation_pairs'].append([en_word, translated.text.lower() ])
-            en_it_pairs['en_words'].add(en_word)
-            
+        if translations[0].lower() == en_word: # not translated
+            continue        
+        print(translations[0])
+        for translation in translations:
+            if len(translation.split()) == 1:
+                train_pairs['it_words'].add(translated.lower().strip())
+                train_pairs['translation_pairs'].append([en_word, translated.lower().strip() ])
+                train_pairs['en_words'].add(en_word)
+                break
+                
         if i%100 == 0: # backup translations, there is a limit of translations in google translate
             with open(split_set + '_'+'wikicomp_pairs.json', 'w') as fp:
-                fp.write(json.dumps(train_set))   
+                save_pairs = {'en_words':list(train_pairs['en_words']), 'it_words':list(train_pairs['it_words']), 'translation_pairs':train_pairs['translation_pairs']}
+                fp.write(json.dumps(save_pairs))   
+                print("{} translations completed".format(i))
         
-    return en_it_pairs
+    return train_pairs
 
 def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
     
@@ -109,6 +110,21 @@ def split_dataset(word_list, val_ratio=0.2, test_ratio=0.3):
     
     return train_set, val_set, test_set
 
+def create_annotations(set_pair, split_set='train'):
+    
+    annotations = {'en_words':list(set_pair['en_words']), 'it_words':list(set_pair['it_words']), 'input_outputs':[]}
+    italian_words = list(set_pair['it_words'])
+    for pair in set_pair['translation_pairs']:
+        positive_sample = {'english_word': pair[0], 'italian_word':pair[1], 'output':1}
+        wrong_translation = random.choice(italian_words)
+        while wrong_translation == pair[1]: # true translation could be selected
+            wrong_translation = random.choice(italian_words)
+        negative_sample = {'english_word': pair[0], 'italian_word':wrong_translation, 'output':0}
+        
+        annotations['input_outputs'].append(positive_sample)
+        annotations['input_outputs'].append(negative_sample)
+
+    return annotations
 
 if __name__ == '__main__':
     
@@ -119,22 +135,31 @@ if __name__ == '__main__':
     train_set, val_set, test_set = split_dataset(list(en_words))
 
     
-    it_words, en_it_pairs = translate_en_it(en_words)
-    print("Number of pairs: {}".format(len(en_it_pairs)))
+    train_pairs = translate_en_it(train_set, split_set='train')
+    print("Number of train pairs: {}".format(len(train_pairs['translation_pairs'])))
 
+    val_pairs = translate_en_it(val_set, split_set='val')
+    print("Number of val pairs: {}".format(len(val_pairs['translation_pairs'])))
     
-    print("Training set size: {}".format(len(train_set)))
-    print("Validation set size: {}".format(len(val_set)))
-    print("Test set size: {}".format(len(test_set)))
+    test_pairs = translate_en_it(test_set, split_set='test')
+    print("Number of test pairs: {}".format(len(test_pairs['translation_pairs'])))
 
+    train_annotations = create_annotations(train_pairs)
+    val_annotations = create_annotations(val_pairs)
+    test_annotations = create_annotations(test_pairs)
     
+#     print("Training set size: {}".format(len(train_set)))
+#     print("Validation set size: {}".format(len(val_set)))
+#     print("Test set size: {}".format(len(test_set)))
+# 
+#     
     with open('wikicomp_train_set.json', 'w') as fp:
-        fp.write(json.dumps(train_set))
-        
+        fp.write(json.dumps(train_annotations))
+         
     with open('wikicomp_val_set.json', 'w') as fp:
-        fp.write(json.dumps(val_set))
-        
+        fp.write(json.dumps(val_annotations))
+         
     with open('wikicomp_test_set.json', 'w') as fp:
-        fp.write(json.dumps(test_set))
+        fp.write(json.dumps(test_annotations))
             
     print("finish")
