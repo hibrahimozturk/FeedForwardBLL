@@ -33,8 +33,8 @@ def validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch)
     for iter, batch in enumerate(val_loader):
 
         if use_gpu:
-            src_word2vec = Variable(batch['src_word2vec'].cuda())
-            target_word2vec = Variable(batch['target_word2vec'].cuda())
+            src_word2vec = Variable(batch['src_word2vec'].float().cuda())
+            target_word2vec = Variable(batch['target_word2vec'].float().cuda())
             labels = Variable(batch['output'].float().cuda())
         else:
             src_word2vec = Variable(batch['src_word2vec'])

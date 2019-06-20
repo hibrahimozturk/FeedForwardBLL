@@ -68,9 +68,9 @@ class BLLDataset(Dataset):
     def __getitem__(self, idx):
         
         src_word2vec = self.word_vectors[self.pairs[idx]['english_word']]
-        src_word2vec = np.interp(src_word2vec, (src_word2vec.min(), src_word2vec.max()), (-1, 1))
+#         src_word2vec = np.interp(src_word2vec, (src_word2vec.min(), src_word2vec.max()), (-1, 1))
         target_word2vec = self.word_vectors[self.pairs[idx]['italian_word']]
-        target_word2vec = np.interp(target_word2vec, (target_word2vec.min(), target_word2vec.max()), (-1, 1))
+#         target_word2vec = np.interp(target_word2vec, (target_word2vec.min(), target_word2vec.max()), (-1, 1))
 
         sample = {'src_word': self.pairs[idx]['english_word'] , 'target_word':self.pairs[idx]['italian_word'],
                   'src_word2vec': src_word2vec, 'target_word2vec': target_word2vec ,

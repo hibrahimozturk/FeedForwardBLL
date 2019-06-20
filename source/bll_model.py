@@ -20,9 +20,9 @@ class BLLModel(nn.Module):
         
         self.bn2 = nn.BatchNorm1d(256)
 
-        self.fc1 = nn.Linear(256,128)
-        self.fc2 = nn.Linear(128,32)
-        self.fc3 = nn.Linear(32,1)
+        self.fc1 = nn.Linear(256,32)
+        self.fc2 = nn.Linear(32,1)
+#         self.fc3 = nn.Linear(32,1)
         
         self.sigmoid = nn.Sigmoid()
         
@@ -30,17 +30,17 @@ class BLLModel(nn.Module):
     def forward(self, source_vector, target_vector):
         
         
-        branch_1 = self.bn1_1(self.relu(self.linear_1_1(source_vector)))
+        branch_1 = self.relu(self.linear_1_1(source_vector))
         branch_1 = self.relu( self.linear_1_2(branch_1))
         
-        branch_2 = self.bn2_1(self.relu(self.linear_2_1(target_vector)))
+        branch_2 = self.relu(self.linear_2_1(target_vector))
         branch_2 = self.relu(self.linear_2_2(branch_2))     
         
         x = torch.cat((branch_1, branch_2), dim=1)
         
-        x =  self.relu( nn.functional.dropout(self.fc1(x), p=0.5 ) )
-        x =  self.relu( nn.functional.dropout(self.fc2(x), p=0.5 ) )
-        x =  self.sigmoid( self.fc3(x) )
+        x =  self.relu(self.fc1(x) )
+#         x =  self.relu( nn.functional.dropout(self.fc2(x), p=0.5 ) )
+        x =  self.sigmoid( self.fc2(x) )
         
         return x
         

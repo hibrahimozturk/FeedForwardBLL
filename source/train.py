@@ -49,8 +49,8 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
             optimizer.zero_grad()
 
             if use_gpu:
-                src_word2vec = Variable(batch['src_word2vec'].cuda())
-                target_word2vec = Variable(batch['target_word2vec'].cuda())
+                src_word2vec = Variable(batch['src_word2vec'].float().cuda())
+                target_word2vec = Variable(batch['target_word2vec'].float().cuda())
                 labels = Variable(batch['output'].float().cuda())
             else:
                 src_word2vec = Variable(batch['src_word2vec'])
@@ -83,15 +83,16 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
         print("####################################################")
         
         # Save epoch checkpoint
-        torch.save({'epoch':epoch,
-                    'model_state_dict': bll_model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'train_loss': epoch_losses,
-#                     'val_results': val_results,
-                    'iter_losses': iter_losses,
-                    'epoch_continue': False,
-                    'start_iter': 0
-            }, os.path.join(output_dir, 'checkpoints', 'epoch_' + str(epoch) + '.checkpoint'))
+        if epoch == epochs-1:
+            torch.save({'epoch':epoch,
+                        'model_state_dict': bll_model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'train_loss': epoch_losses,
+    #                     'val_results': val_results,
+                        'iter_losses': iter_losses,
+                        'epoch_continue': False,
+                        'start_iter': 0
+                }, os.path.join(output_dir, 'checkpoints', 'epoch_' + str(epoch) + '.checkpoint'))
 
         draw_graph(epoch_losses, "Epoch", "Loss", output_dir, "train_epoch_loss")
         draw_graph(val_losses, "Epoch", "Loss", output_dir, "val_epoch_loss")
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     lr         = 1e-4
     momentum   = 0.9
     epochs     = 100
-    batchsize  = 16
+    batchsize  = 64
     w_decay    = 0
     step_size  = 50
     gamma      = 0.2
