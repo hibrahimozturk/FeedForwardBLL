@@ -20,9 +20,9 @@
 [English word, italian word]
 
 * Total words:    15278
- *  Training set:   11590
- * Validation set: 2939
- * Test set:       749
+  * Training set:   11590
+  * Validation set: 2939
+  * Test set:       749
 
 
 We pair each english word with true translation and wrong translation.
