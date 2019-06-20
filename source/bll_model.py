@@ -30,10 +30,10 @@ class BLLModel(nn.Module):
     def forward(self, source_vector, target_vector):
         
         
-        branch_1 = self.relu(self.linear_1_1(source_vector))
+        branch_1 = self.bn1_1(self.relu(self.linear_1_1(source_vector)))
         branch_1 = self.relu( self.linear_1_2(branch_1))
         
-        branch_2 = self.relu(self.linear_2_1(target_vector))
+        branch_2 = self.bn2_1(self.relu(self.linear_2_1(target_vector)))
         branch_2 = self.relu(self.linear_2_2(branch_2))     
         
         x = torch.cat((branch_1, branch_2), dim=1)
