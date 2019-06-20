@@ -141,13 +141,13 @@ if __name__ == '__main__':
     args = parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]= args.gpu
 
-    lr         = 1e-3
+    lr         = 1e-4
     momentum   = 0.9
     epochs     = 10
     batchsize  = 64
-    w_decay    = 1e-5
+    w_decay    = 0
     step_size  = 50
-    gamma      = 0.5
+    gamma      = 0.2
 
     output_dir=os.path.join(args.exp_dir, args.exp_name)
     
