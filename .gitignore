@@ -12,3 +12,7 @@ data/
 source/word2vec/
 
 source/fasttext/
+
+experiments/
+
+*.pyc

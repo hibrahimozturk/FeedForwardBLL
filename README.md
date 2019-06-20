@@ -14,6 +14,7 @@
 * gensim
 * fasttext
 * pytorch
+* matplotlib
 
 ## Dataset
 

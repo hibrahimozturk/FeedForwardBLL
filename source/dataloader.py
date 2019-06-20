@@ -75,7 +75,7 @@ class BLLDataset(Dataset):
         
         sample = {'src_word': self.pairs[idx]['english_word'] , 'target_word':self.pairs[idx]['italian_word'],
                   'src_word2vec': src_word2vec, 'target_word2vec': target_word2vec ,
-                  'output': 2*float(self.pairs[idx]['output']) -1}
+                  'output': float(self.pairs[idx]['output'])}
 
         return sample
     

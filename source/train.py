@@ -17,6 +17,7 @@ import json
 import time
 
 import numpy as np
+from validation import validate
 
 def draw_graph(values, x_label, y_label , output_dir, graph_name):
     plt.xlabel(x_label)
@@ -27,10 +28,11 @@ def draw_graph(values, x_label, y_label , output_dir, graph_name):
 
 def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion, use_gpu):
     
+    epoch_losses = []
+    val_losses = []
         
     for epoch in range(0, epochs):
         
-        epoch_losses = []
         iter_losses = []
         
         bll_model.train()
@@ -49,7 +51,7 @@ def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion
             if use_gpu:
                 src_word2vec = Variable(batch['src_word2vec'].cuda())
                 target_word2vec = Variable(batch['target_word2vec'].cuda())
-                labels = Variable(batch['output'].cuda())
+                labels = Variable(batch['output'].float().cuda())
             else:
                 src_word2vec = Variable(batch['src_word2vec'])
                 target_word2vec = Variable(batch['target_word2vec'])
@@ -74,6 +76,8 @@ def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion
         minutes, seconds = divmod(rem, 60)
            
         epoch_losses.append(np.mean(np.array(buffer_losses)))
+        val_losses = validate(args, bll_model, train_loader, criterion, use_gpu, val_losses, epoch)
+
         buffer_losses = []
         print("##### Finish epoch {}, time elapsed {}h {}m {}s #####".format(epoch, hours, minutes, seconds))
         print("####################################################")
@@ -90,6 +94,7 @@ def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion
             }, os.path.join(output_dir, 'checkpoints', 'epoch_' + str(epoch) + '.checkpoint'))
 
         draw_graph(epoch_losses, "Epoch", "Loss", output_dir, "train_epoch_loss")
+        draw_graph(val_losses, "Epoch", "Loss", output_dir, "val_epoch_loss")
 
     
     return
@@ -171,7 +176,7 @@ if __name__ == '__main__':
         bll_model = nn.DataParallel(bll_model, device_ids=num_gpu)
         print("Finish cuda loading, time elapsed {}".format(time.time() - ts))
 
-    criterion = nn.TripletMarginLoss()
+    criterion = nn.BCELoss()
     optimizer = optim.SGD(bll_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
