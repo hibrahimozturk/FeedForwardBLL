@@ -39,10 +39,10 @@ class BLLModel(nn.Module):
         branch_2 = self.bn2_1(self.relu(self.linear_2_1(target_vector)))
         branch_2 = self.relu(self.linear_2_2(branch_2))     
         
-        x = torch.cat((branch_1, branch_2), dim=1)
+        x =  self.bn2(torch.cat((branch_1, branch_2), dim=1))
         
-        x =  self.bn2(self.relu(self.fc1(x) ))
-        x =  self.bn3(self.relu( self.fc2(x) ))
+        x =  self.bn3(self.relu(self.fc1(x) ))
+        x =  self.relu( self.fc2(x) )
         x =  self.sigmoid( self.fc3(x) )
         
         return x
