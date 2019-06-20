@@ -83,7 +83,7 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
         print("####################################################")
         
         # Save epoch checkpoint
-        if epoch == epochs-1:
+        if (epoch+1)%10 == 0:
             torch.save({'epoch':epoch,
                         'model_state_dict': bll_model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
