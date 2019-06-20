@@ -19,7 +19,7 @@ import time
 import numpy as np
 
 
-def validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch):
+def validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, val_accs, epoch):
     
     bll_model.eval()
     print()
@@ -28,6 +28,9 @@ def validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch)
 
     buffer_losses = []
     epoch_start = time.time()
+    
+    all_targets = []
+    all_outputs = []
     
     # Epoch of Training
     for iter, batch in enumerate(val_loader):
@@ -43,6 +46,9 @@ def validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch)
 
         # Train one iteration
         outputs = bll_model(src_word2vec, target_word2vec)
+        all_outputs += outputs.data.cpu().numpy().squeeze().tolist()
+        all_targets += labels.cpu().numpy().squeeze().tolist()
+
         loss = criterion(outputs, labels)
         buffer_losses.append(loss.item())
         
@@ -51,9 +57,14 @@ def validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch)
                   .format(epoch, iter, val_loader.__len__(), loss.item(), time.time()-epoch_start))
         
     # End of epoch info
-       
+    
+    prediction = np.array(all_outputs) >= 0.5
+    correct = prediction == np.array(all_targets)
+    accuracy = ( np.sum(correct) / len(all_targets) ) *100
+    print("validation epoch {}, accuracy: {}".format(epoch, accuracy))
     val_losses.append(np.mean(np.array(buffer_losses)))
+    val_accs.append(accuracy)
     print("####################################################")
     
     
-    return val_losses
+    return val_losses, val_accs

@@ -30,7 +30,8 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
     
     epoch_losses = []
     val_losses = []
-        
+    val_accs = []
+       
     for epoch in range(0, epochs):
         
         iter_losses = []
@@ -76,7 +77,7 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
         minutes, seconds = divmod(rem, 60)
            
         epoch_losses.append(np.mean(np.array(buffer_losses)))
-        val_losses = validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch)
+        val_losses, val_accs = validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, val_accs, epoch)
 
         buffer_losses = []
         print("##### Finish epoch {}, time elapsed {}h {}m {}s #####".format(epoch, hours, minutes, seconds))
@@ -96,6 +97,7 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
 
         draw_graph(epoch_losses, "Epoch", "Loss", output_dir, "train_epoch_loss")
         draw_graph(val_losses, "Epoch", "Loss", output_dir, "val_epoch_loss")
+        draw_graph(val_accs, "Epoch", "Loss", output_dir, "val_epoch_accs")
 
     
     return
