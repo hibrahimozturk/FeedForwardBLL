@@ -142,7 +142,7 @@ if __name__ == '__main__':
     args = parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]= args.gpu
 
-    lr         = 1e-4
+    lr         = 1e-2
     momentum   = 0.9
     epochs     = 100
     batchsize  = 64
