@@ -39,7 +39,7 @@ class BLLModel(nn.Module):
         x = torch.cat((branch_1, branch_2), dim=1)
         
         x =  self.relu(self.fc1(x) )
-        x =  self.relu( nn.functional.dropout(self.fc2(x), p=0.5 ) )
+        x =  self.relu( self.fc2(x) )
         x =  self.sigmoid( self.fc3(x) )
         
         return x
