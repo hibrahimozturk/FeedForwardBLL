@@ -6,6 +6,7 @@ from torch.autograd import Variable
 
 from dataloader import BLLDataset
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
 
 from bll_model import BLLModel
 import argparse
@@ -15,11 +16,24 @@ import codecs
 import json
 import time
 
-def train(args):
+import numpy as np
+
+def draw_graph(values, x_label, y_label , output_dir, graph_name):
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.plot(values)
+    plt.savefig(os.path.join(output_dir, graph_name + '.png'))
+    plt.clf()
+
+def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion, use_gpu):
     
         
-    for epoch in range(0, args.epochs):
-        fcn_model.train()
+    for epoch in range(0, epochs):
+        
+        epoch_losses = []
+        iter_losses = []
+        
+        bll_model.train()
         print("####################################################")
         print('Training Epoch: ' + str(epoch))
         scheduler.step()
@@ -29,7 +43,7 @@ def train(args):
         
         # Epoch of Training
         for iter, batch in enumerate(train_loader):
-            cur_iter = iter + start_iter
+#             cur_iter = iter + start_iter
             optimizer.zero_grad()
 
             if use_gpu:
@@ -39,30 +53,41 @@ def train(args):
                 inputs, labels = Variable(batch['X']), Variable(batch['smap_Y'])
 
             # Train one iteration
-            outputs = fcn_model(inputs)
+            outputs = bll_model(inputs)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
             iter_losses.append(loss.item())
             buffer_losses.append(loss.item())
             
-            if cur_iter % 10 == 0:
+            if iter % 10 == 0:
                 print("train epoch {}, iter{}/{}, loss: {}, elapsed {}"\
-                      .format(epoch, cur_iter, train_loader.__len__(), loss.item(), time.time()-epoch_start))
+                      .format(epoch, iter, train_loader.__len__(), loss.item(), time.time()-epoch_start))
                 draw_graph(iter_losses, "Iteration", "Loss", output_dir, "train_iter_loss")
             
-            # Save checkpoint
-            if cur_iter % 50 == 0:
-                torch.save({'epoch':epoch,
+        # End of epoch info
+        epoch_end = time.time()
+        hours, rem = divmod(epoch_end-epoch_start, 3600)
+        minutes, seconds = divmod(rem, 60)
+           
+        epoch_losses.append(np.mean(np.array(buffer_losses)))
+        buffer_losses = []
+        print("##### Finish epoch {}, time elapsed {}h {}m {}s #####".format(epoch, hours, minutes, seconds))
+        print("####################################################")
+        
+                # Save epoch checkpoint
+        torch.save({'epoch':epoch,
                     'model_state_dict': fcn_model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'train_loss': epoch_losses,
                     'val_results': val_results,
-                    'iter_losses': iter_losses, 
-                    'epoch_continue': True,
-                    'start_iter': cur_iter
-                    }, os.path.join(output_dir, 'checkpoints', 'epoch_' + str(epoch) + '_iter_' + str(cur_iter) + '.checkpoint'))
-        
+                    'iter_losses': iter_losses,
+                    'epoch_continue': False,
+                    'start_iter': 0
+            }, os.path.join(output_dir, 'checkpoints', 'epoch_' + str(epoch) + '.checkpoint'))
+
+        draw_graph(epoch_losses, "Epoch", "Loss", output_dir, "train_epoch_loss")
+
     
     return
 
@@ -106,14 +131,24 @@ def parse_args():
 if __name__ == '__main__':
 
     args = parse_args()
-    
     os.environ["CUDA_VISIBLE_DEVICES"]= args.gpu
+
+    lr         = 1e-4
+    momentum   = 0.9
+    epochs     = 10
+    batchsize  = 64
+    w_decay    = 1e-5
+    step_size  = 50
+    gamma      = 0.5
 
     output_dir=os.path.join(args.exp_dir, args.exp_name)
     
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
+    if not os.path.exists(os.path.join(output_dir, 'checkpoints')):
+        os.makedirs(os.path.join(output_dir, 'checkpoints'))
+        
     use_gpu = torch.cuda.is_available()
     num_gpu = list(range(torch.cuda.device_count()))
 
@@ -124,7 +159,7 @@ if __name__ == '__main__':
         en_it_pairs = json.load(fp) 
 
     train_data = BLLDataset(en_it_pairs['input_outputs'], word_vectors)
-    train_loader = DataLoader(train_data, batch_size=args.batchsize, shuffle=True, num_workers=1)
+    train_loader = DataLoader(train_data, batch_size=batchsize, shuffle=True, num_workers=1)
 
     bll_model = BLLModel()
     if use_gpu:
@@ -133,6 +168,8 @@ if __name__ == '__main__':
         bll_model = nn.DataParallel(bll_model, device_ids=num_gpu)
         print("Finish cuda loading, time elapsed {}".format(time.time() - ts))
 
-    criterion = nn.MSELoss()
+    criterion = nn.TripletMarginLoss()
+    optimizer = optim.SGD(bll_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
+    scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
     print("finished")
