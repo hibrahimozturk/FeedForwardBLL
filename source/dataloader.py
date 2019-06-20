@@ -73,7 +73,9 @@ class BLLDataset(Dataset):
         src_word2vec = self.word_vectors[self.pairs[idx]['english_word']]
         target_word2vec = self.word_vectors[self.pairs[idx]['italian_word']]
         
-        sample = {'src_word': self.pairs[idx]['english_word'] , 'target_word':self.pairs[idx]['italian_word'], 'src_word2vec': src_word2vec, 'target_word2vec': target_word2vec , 'output': self.pairs[idx]['output']}
+        sample = {'src_word': self.pairs[idx]['english_word'] , 'target_word':self.pairs[idx]['italian_word'],
+                  'src_word2vec': src_word2vec, 'target_word2vec': target_word2vec ,
+                  'output': 2*float(self.pairs[idx]['output']) -1}
 
         return sample
     
@@ -98,10 +100,10 @@ if __name__ == '__main__':
         sample = train_data[i]
         print(i, sample['src_word'], sample['src_word2vec'].shape, sample['target_word'], sample['target_word2vec'].shape)
 
-#     dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
-#  
-#     for i, batch in enumerate(dataloader):
-#         print(i, batch['src_word'], batch['src_word2vec'].shape, batch['target_word'], batch['target_word2vec'].shape, batch['output'])
+    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
+  
+    for i, batch in enumerate(dataloader):
+        print(i, batch['src_word'], batch['src_word2vec'], batch['target_word'], batch['target_word2vec'], batch['output'])
     
     
     print("finish")  

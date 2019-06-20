@@ -47,13 +47,16 @@ def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion
             optimizer.zero_grad()
 
             if use_gpu:
-                inputs = Variable(batch['X'].cuda())
-                labels = Variable(batch['smap_Y'].cuda())
+                src_word2vec = Variable(batch['src_word2vec'].cuda())
+                target_word2vec = Variable(batch['target_word2vec'].cuda())
+                labels = Variable(batch['output'].cuda())
             else:
-                inputs, labels = Variable(batch['X']), Variable(batch['smap_Y'])
+                src_word2vec = Variable(batch['src_word2vec'])
+                target_word2vec = Variable(batch['target_word2vec'])
+                labels = Variable(batch['output'])
 
             # Train one iteration
-            outputs = bll_model(inputs)
+            outputs = bll_model(src_word2vec, target_word2vec)
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
@@ -75,12 +78,12 @@ def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion
         print("##### Finish epoch {}, time elapsed {}h {}m {}s #####".format(epoch, hours, minutes, seconds))
         print("####################################################")
         
-                # Save epoch checkpoint
+        # Save epoch checkpoint
         torch.save({'epoch':epoch,
-                    'model_state_dict': fcn_model.state_dict(),
+                    'model_state_dict': bll_model.state_dict(),
                     'optimizer_state_dict': optimizer.state_dict(),
                     'train_loss': epoch_losses,
-                    'val_results': val_results,
+#                     'val_results': val_results,
                     'iter_losses': iter_losses,
                     'epoch_continue': False,
                     'start_iter': 0
@@ -171,5 +174,7 @@ if __name__ == '__main__':
     criterion = nn.TripletMarginLoss()
     optimizer = optim.SGD(bll_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
+
+    train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion, use_gpu)
 
     print("finished")
