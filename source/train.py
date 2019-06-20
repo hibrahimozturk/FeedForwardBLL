@@ -142,7 +142,7 @@ if __name__ == '__main__':
     args = parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]= args.gpu
 
-    lr         = 1e-2
+    lr         = 1e-4
     momentum   = 0.9
     epochs     = 100
     batchsize  = 64
@@ -187,7 +187,8 @@ if __name__ == '__main__':
         print("Finish cuda loading, time elapsed {}".format(time.time() - ts))
 
     criterion = nn.BCELoss()
-    optimizer = optim.SGD(bll_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
+#     optimizer = optim.SGD(bll_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
+    optimizer = optim.Adam(bll_model.parameters(), lr=lr)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
     train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epochs, criterion, use_gpu)
