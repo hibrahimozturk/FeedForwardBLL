@@ -11,13 +11,9 @@ import glob
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-# en_fasttext = fasttext.load_model('fasttext/en/wiki-news-300d-1M.vec')
-
-
-
 def vectors_cache():
     wordvectors = {}
-    with codecs.open('dataprocessing/wikicomp_train_set.json', 'r', "ISO-8859-1") as fp:
+    with codecs.open('../data/wikicomp_dataset/val/wikicomp_val_set.json', 'r', "ISO-8859-1") as fp:
         en_it_pairs = json.load(fp)
     
     en_model = gensim.models.KeyedVectors.load_word2vec_format('word2vec/en/GoogleNews-vectors-negative300.bin', binary=True)
@@ -48,10 +44,10 @@ def vectors_cache():
                 filtered_input_outpus.append(input_output)
     
     filtered_annonatations = {'en_words':filtered_en_words, 'it_words':filtered_it_words, 'input_outputs':filtered_input_outpus}
-    with codecs.open('wikicomp_train_filtered_set.json', 'w', "ISO-8859-1") as fp:
+    with codecs.open('wikicomp_val_filtered_set.json', 'w', "ISO-8859-1") as fp:
         fp.write(json.dumps(filtered_annonatations, sort_keys=True, indent=4, ensure_ascii=False))
     
-    with open('train_vectors.pickle', 'wb') as handle:
+    with open('val_vectors.pickle', 'wb') as handle:
         pickle.dump(wordvectors, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -82,28 +78,28 @@ class BLLDataset(Dataset):
 
     
 if __name__ == '__main__':
-#     vectors_cache()
+    vectors_cache()
     
-    os.environ["CUDA_VISIBLE_DEVICES"]= '0'
- 
-    with open('../data/wikicomp_dataset/train/train_vectors.pickle', 'rb') as handle:
-        word_vectors = pickle.load(handle)
-         
-    with codecs.open('../data/wikicomp_dataset/train/train_filtered_set.json', 'r', "ISO-8859-1") as fp:
-        en_it_pairs = json.load(fp) 
-          
-    train_data = BLLDataset(en_it_pairs['input_outputs'], word_vectors)
- 
-    # show a batch
-    batch_size = 4
-    for i in range(batch_size):
-        sample = train_data[i]
-        print(i, sample['src_word'], sample['src_word2vec'].shape, sample['target_word'], sample['target_word2vec'].shape)
-
-    dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
-  
-    for i, batch in enumerate(dataloader):
-        print(i, batch['src_word'], batch['src_word2vec'], batch['target_word'], batch['target_word2vec'], batch['output'])
+#     os.environ["CUDA_VISIBLE_DEVICES"]= '0'
+#  
+#     with open('../data/wikicomp_dataset/train/train_vectors.pickle', 'rb') as handle:
+#         word_vectors = pickle.load(handle)
+#          
+#     with codecs.open('../data/wikicomp_dataset/train/train_filtered_set.json', 'r', "ISO-8859-1") as fp:
+#         en_it_pairs = json.load(fp) 
+#           
+#     train_data = BLLDataset(en_it_pairs['input_outputs'], word_vectors)
+#  
+#     # show a batch
+#     batch_size = 4
+#     for i in range(batch_size):
+#         sample = train_data[i]
+#         print(i, sample['src_word'], sample['src_word2vec'].shape, sample['target_word'], sample['target_word2vec'].shape)
+# 
+#     dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
+#   
+#     for i, batch in enumerate(dataloader):
+#         print(i, batch['src_word'], batch['src_word2vec'], batch['target_word'], batch['target_word2vec'], batch['output'])
     
     
     print("finish")  

@@ -26,7 +26,7 @@ def draw_graph(values, x_label, y_label , output_dir, graph_name):
     plt.savefig(os.path.join(output_dir, graph_name + '.png'))
     plt.clf()
 
-def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion, use_gpu):
+def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epochs, criterion, use_gpu):
     
     epoch_losses = []
     val_losses = []
@@ -76,7 +76,7 @@ def train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion
         minutes, seconds = divmod(rem, 60)
            
         epoch_losses.append(np.mean(np.array(buffer_losses)))
-        val_losses = validate(args, bll_model, train_loader, criterion, use_gpu, val_losses, epoch)
+        val_losses = validate(args, bll_model, val_loader, criterion, use_gpu, val_losses, epoch)
 
         buffer_losses = []
         print("##### Finish epoch {}, time elapsed {}h {}m {}s #####".format(epoch, hours, minutes, seconds))
@@ -107,7 +107,7 @@ def parse_args():
 
     parser.add_argument(
         '--exp', '-e',
-        dest='exp_name', type=str, default="exp"
+        dest='exp_name', type=str, default="exp/exp1"
     )
     
     parser.add_argument(
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     args = parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]= args.gpu
 
-    lr         = 1e-4
+    lr         = 1e-3
     momentum   = 0.9
     epochs     = 10
     batchsize  = 64
@@ -168,6 +168,15 @@ if __name__ == '__main__':
 
     train_data = BLLDataset(en_it_pairs['input_outputs'], word_vectors)
     train_loader = DataLoader(train_data, batch_size=batchsize, shuffle=True, num_workers=1)
+    
+    with open('../data/wikicomp_dataset/val/val_vectors.pickle', 'rb') as handle:
+        word_vectors = pickle.load(handle)
+         
+    with codecs.open('../data/wikicomp_dataset/val/val_filtered_set.json', 'r', "ISO-8859-1") as fp:
+        en_it_pairs = json.load(fp) 
+
+    val_data = BLLDataset(en_it_pairs['input_outputs'], word_vectors)
+    val_loader = DataLoader(val_data, batch_size=batchsize, shuffle=True, num_workers=1)
 
     bll_model = BLLModel()
     if use_gpu:
@@ -180,6 +189,6 @@ if __name__ == '__main__':
     optimizer = optim.SGD(bll_model.parameters(), lr=lr, momentum=momentum, weight_decay=w_decay)
     scheduler = lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)  # decay LR by a factor of 0.5 every 30 epochs
 
-    train(args, bll_model, train_loader, scheduler, optimizer, epochs, criterion, use_gpu)
+    train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epochs, criterion, use_gpu)
 
     print("finished")
