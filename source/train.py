@@ -143,8 +143,8 @@ if __name__ == '__main__':
 
     lr         = 1e-4
     momentum   = 0.9
-    epochs     = 10
-    batchsize  = 64
+    epochs     = 100
+    batchsize  = 16
     w_decay    = 0
     step_size  = 50
     gamma      = 0.2
