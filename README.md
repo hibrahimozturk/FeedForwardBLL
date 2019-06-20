@@ -24,15 +24,15 @@
 
 [English word, italian word]
 
-Total words:    15278
-.Training set:   11590
-.Validation set: 2939
-.Test set:       749
+* Total words:    15278
+  Training set:   11590
+  Validation set: 2939
+  Test set:       749
 
 One positive and one negative translation pair are selected from words in sets.
 
 * After filtering words not included in word2vec
-.Training pairs: 20977
+   Training pairs: 20977
 
 ## Todo
 
