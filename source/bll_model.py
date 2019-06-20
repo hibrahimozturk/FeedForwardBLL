@@ -20,8 +20,8 @@ class BLLModel(nn.Module):
         
         self.bn2 = nn.BatchNorm1d(256)
 
-        self.fc1 = nn.Linear(256,256)
-        self.fc2 = nn.Linear(256,1)
+        self.fc1 = nn.Linear(256,32)
+        self.fc2 = nn.Linear(32,1)
 #         self.fc3 = nn.Linear(32,1)
         
         self.sigmoid = nn.Sigmoid()
