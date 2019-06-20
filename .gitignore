@@ -8,3 +8,7 @@ data/
 \.pydevproject
 
 \.settings/
+
+source/word2vec/
+
+source/fasttext/

@@ -77,7 +77,8 @@ def translate_en_it(en_words, split_set = 'train'):
             continue   
           
         try:
-            en_word = str(en_word.encode('iso-8859-1'), encoding='iso-8859-1', errors='strict')
+            # filter unknown chracters
+            en_word = str(en_word.encode('iso-8859-1'), encoding='iso-8859-1', errors='strict') 
             
             translation = translate_client.translate(en_word, target_language='it')
             num_of_chars += len(en_word)
