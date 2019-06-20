@@ -84,7 +84,7 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
         print("####################################################")
         
         # Save epoch checkpoint
-        if (epoch+1)%10 == 0:
+        if (epoch+1)%1 == 0:
             torch.save({'epoch':epoch,
                         'model_state_dict': bll_model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict(),
@@ -144,9 +144,9 @@ if __name__ == '__main__':
     args = parse_args()
     os.environ["CUDA_VISIBLE_DEVICES"]= args.gpu
 
-    lr         = 1e-4
+    lr         = 1e-5
     momentum   = 0.9
-    epochs     = 100
+    epochs     = 20
     batchsize  = 64
     w_decay    = 0
     step_size  = 50
