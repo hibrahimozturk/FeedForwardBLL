@@ -20,11 +20,15 @@ class BLLModel(nn.Module):
         
         self.bn2 = nn.BatchNorm1d(256)
 
-        self.fc1 = nn.Linear(256,256)
+        self.fc1 = nn.Linear(256,128)
 
-        self.bn3 = nn.BatchNorm1d(256)
+        self.bn3 = nn.BatchNorm1d(128)
 
-        self.fc2 = nn.Linear(256,32)
+        self.fc2 = nn.Linear(128,32)
+        
+        self.bn4 = nn.BatchNorm1d(32)
+
+        
         self.fc3 = nn.Linear(32,1)
         
         self.sigmoid = nn.Sigmoid()
@@ -42,7 +46,7 @@ class BLLModel(nn.Module):
         x =  self.bn2(torch.cat((branch_1, branch_2), dim=1))
         
         x =  self.bn3(self.relu(self.fc1(x) ))
-        x =  self.relu( self.fc2(x) )
+        x =  self.bn4(self.relu( self.fc2(x) ))
         x =  self.sigmoid( self.fc3(x) )
         
         return x
