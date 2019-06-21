@@ -8,25 +8,24 @@ class BLLModel(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.lrelu    = nn.LeakyReLU()
+        self.relu    = nn.ReLU()
 
-        self.linear_1_1 = nn.Linear(300, 256)
-        self.bn1_1 = nn.BatchNorm1d(256)
-        self.linear_1_2 = nn.Linear(256,128)
-        
-        self.linear_2_1 = nn.Linear(300,256)
-        self.bn2_1 = nn.BatchNorm1d(256)
-        self.linear_2_2 = nn.Linear(256,128)
-        
+        self.ln1 = nn.Linear(600, 512)
+        self.bn1 = nn.BatchNorm1d(512)
+        self.ln2 = nn.Linear(512,256)
         self.bn2 = nn.BatchNorm1d(256)
+        self.ln3 = nn.Linear(256,256)
+        self.bn3 = nn.BatchNorm1d(256)
+        self.ln4 = nn.Linear(256,128)
+        self.bn4 = nn.BatchNorm1d(128)
 
-        self.fc1 = nn.Linear(256,128)
+        self.fc1 = nn.Linear(128,64)
 
-        self.bn3 = nn.BatchNorm1d(128)
+        self.bn5 = nn.BatchNorm1d(64)
 
-        self.fc2 = nn.Linear(128,32)
+        self.fc2 = nn.Linear(64,32)
         
-        self.bn4 = nn.BatchNorm1d(32)
+        self.bn6 = nn.BatchNorm1d(32)
 
         self.fc3 = nn.Linear(32,1)
         
@@ -35,17 +34,15 @@ class BLLModel(nn.Module):
   
     def forward(self, source_vector, target_vector):
         
-        
-        branch_1 = self.bn1_1(self.lrelu(self.linear_1_1(source_vector)))
-        branch_1 = self.lrelu( self.linear_1_2(branch_1))
-        
-        branch_2 = self.bn2_1(self.lrelu(self.linear_2_1(target_vector)))
-        branch_2 = self.lrelu(self.linear_2_2(branch_2))     
-        
-        x =  self.bn2(torch.cat((branch_1, branch_2), dim=1))
-        
-        x =  self.bn3( self.lrelu(self.fc1(x) ))
-        x =  self.bn4( self.lrelu( self.fc2(x) ))
+        x =  torch.cat((source_vector, target_vector), dim=1)
+
+        x = self.bn1(self.relu(self.ln1(x)))
+        x = self.bn2(self.relu(self.ln2(x)))
+        x = self.bn3(self.relu(self.ln3(x)))
+        x = self.bn4(self.relu(self.ln4(x)))
+
+        x =  self.bn3( self.relu(self.fc1(x) ))
+        x =  self.bn4( self.relu( self.fc2(x) ))
         x =  self.sigmoid( self.fc3(x) )
         
         return x
