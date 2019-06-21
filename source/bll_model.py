@@ -8,7 +8,7 @@ class BLLModel(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.relu    = nn.ReLU()
+        self.relu    = nn.LeakyReLU()
 
         self.linear_1_1 = nn.Linear(300, 256)
         self.bn1_1 = nn.BatchNorm1d(256)
