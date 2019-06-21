@@ -11,7 +11,7 @@
 * nltk
 * google-cloud-translate
 * numpy
-* gensim
+* gensim (word2vec)
 * fasttext
 * pytorch
 * matplotlib
@@ -38,5 +38,5 @@ We pair each english word with true translation and wrong translation.
 * [x] Training, validation and test sets will be splitted
 * [x] python word2vec for it and en will be installed 
 * [x] pytorch special dataloader will be implemented  
-* [ ] models will be trained on pytorch  
+* [x] models will be trained on pytorch  
 * [ ] evaluation will be implemented  
