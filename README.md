@@ -42,7 +42,7 @@ Test accuracy: 86.96596669080377 precision: 0.8593530239099859 recall 0.88422575
 ### adam/earlyfusion/lrelu
 Test accuracy: 88.26937002172339 precision: 0.8598639455782313 recall 0.914616497829233 f1 0.8863955119214586
 
-### adam/earlyfusion/no-bn
+### adam/earlyfusion/no-bn-lrelu
 Test accuracy: 90.65894279507603 precision: 0.9194029850746268 recall:0.8914616497829233 f1: 0.9052167523879501
 
 ### adam/shallow2-3/all-bn-lrelu

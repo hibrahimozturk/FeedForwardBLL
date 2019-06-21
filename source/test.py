@@ -121,7 +121,7 @@ def validate(args, bll_model, val_loader, use_gpu):
     accuracy = ( np.sum(correct) / len(all_targets) ) *100
     [pr, rc, f1, _] = precision_recall_fscore_support(np.array(all_targets), prediction, average='binary')
     
-    print("Test accuracy: {} precision: {} recall {} f1 {}".format(accuracy, pr, rc, f1))
+    print("Test accuracy: {} precision: {} recall:{} f1: {}".format(accuracy, pr, rc, f1))
     print("####################################################")
     
     
