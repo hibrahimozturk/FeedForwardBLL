@@ -36,6 +36,8 @@ We pair each english word with true translation and wrong translation.
 
 ## Experiments
 
+shallow2-3 consists 258817 parameters. earlyfusion consists 550593 parameters.
+
 ### adam/earlyfusion/first (all-bn-relu)
 Test accuracy: 86.96596669080377 precision: 0.8593530239099859 recall 0.8842257597684515 f1 0.8716119828815977
 
