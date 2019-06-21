@@ -30,6 +30,7 @@ We pair each english word with true translation and wrong translation.
 
 * After filtering words not included in word2vec
   * Training pairs: 20977
+  * Validation pairs: 5322
 
 ## Todo
 
@@ -39,4 +40,4 @@ We pair each english word with true translation and wrong translation.
 * [x] python word2vec for it and en will be installed 
 * [x] pytorch special dataloader will be implemented  
 * [x] models will be trained on pytorch  
-* [ ] evaluation will be implemented  
+* [x] evaluation will be implemented  

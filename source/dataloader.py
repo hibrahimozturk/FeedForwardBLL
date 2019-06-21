@@ -14,7 +14,7 @@ import numpy as np
 
 def vectors_cache():
     wordvectors = {}
-    with codecs.open('../data/wikicomp_dataset/val/wikicomp_val_set.json', 'r', "ISO-8859-1") as fp:
+    with codecs.open('../data/wikicomp_dataset/test/wikicomp_test_set.json', 'r', "ISO-8859-1") as fp:
         en_it_pairs = json.load(fp)
     
     en_model = gensim.models.KeyedVectors.load_word2vec_format('word2vec/en/GoogleNews-vectors-negative300.bin', binary=True)
@@ -45,10 +45,10 @@ def vectors_cache():
                 filtered_input_outpus.append(input_output)
     
     filtered_annonatations = {'en_words':filtered_en_words, 'it_words':filtered_it_words, 'input_outputs':filtered_input_outpus}
-    with codecs.open('wikicomp_val_filtered_set.json', 'w', "ISO-8859-1") as fp:
+    with codecs.open('wikicomp_test_filtered_set.json', 'w', "ISO-8859-1") as fp:
         fp.write(json.dumps(filtered_annonatations, sort_keys=True, indent=4, ensure_ascii=False))
     
-    with open('val_vectors.pickle', 'wb') as handle:
+    with open('test_vectors.pickle', 'wb') as handle:
         pickle.dump(wordvectors, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 

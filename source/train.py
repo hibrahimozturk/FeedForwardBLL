@@ -90,6 +90,7 @@ def train(args, bll_model, train_loader, val_loader, scheduler, optimizer, epoch
                         'optimizer_state_dict': optimizer.state_dict(),
                         'train_loss': epoch_losses,
     #                     'val_results': val_results,
+                        'val_accs': val_accs,
                         'iter_losses': iter_losses,
                         'epoch_continue': False,
                         'start_iter': 0
@@ -150,7 +151,7 @@ if __name__ == '__main__':
     batchsize  = 64
     w_decay    = 0
     step_size  = 50
-    gamma      = 0.2
+    gamma      = 0.5
 
     output_dir=os.path.join(args.exp_dir, args.exp_name)
     

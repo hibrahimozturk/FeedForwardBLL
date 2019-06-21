@@ -12,15 +12,11 @@ class BLLModel(nn.Module):
 
         self.linear_1_1 = nn.Linear(300, 256)
         self.bn1_1 = nn.BatchNorm1d(256)
-        self.linear_1_2 = nn.Linear(256, 256)
-        self.bn1_2 = nn.BatchNorm1d(256)
-        self.linear_1_3 = nn.Linear(256,128)
+        self.linear_1_2 = nn.Linear(256,128)
         
         self.linear_2_1 = nn.Linear(300,256)
         self.bn2_1 = nn.BatchNorm1d(256)
-        self.linear_2_2 = nn.Linear(256,256)
-        self.bn2_2 = nn.BatchNorm1d(256)
-        self.linear_2_3 = nn.Linear(256,128)
+        self.linear_2_2 = nn.Linear(256,128)
         
         self.bn2 = nn.BatchNorm1d(256)
 
@@ -32,7 +28,6 @@ class BLLModel(nn.Module):
         
         self.bn4 = nn.BatchNorm1d(32)
 
-        
         self.fc3 = nn.Linear(32,1)
         
         self.sigmoid = nn.Sigmoid()
@@ -42,17 +37,15 @@ class BLLModel(nn.Module):
         
         
         branch_1 = self.bn1_1(self.relu(self.linear_1_1(source_vector)))
-        branch_1 = self.bn1_2(self.relu(self.linear_1_2(branch_1)))
-        branch_1 = self.relu( self.linear_1_3(branch_1))
+        branch_1 = self.relu( self.linear_1_2(branch_1))
         
         branch_2 = self.bn2_1(self.relu(self.linear_2_1(target_vector)))
-        branch_2 = self.bn2_2(self.relu(self.linear_2_2(branch_2)))
-        branch_2 = self.relu(self.linear_2_3(branch_2)) 
+        branch_2 = self.relu(self.linear_2_2(branch_2))     
         
         x =  self.bn2(torch.cat((branch_1, branch_2), dim=1))
         
-        x =  self.bn3(self.relu(self.fc1(x) ))
-        x =  self.bn4(self.relu( self.fc2(x) ))
+        x =  self.bn3( self.relu(self.fc1(x) ))
+        x =  self.bn4( self.relu( self.fc2(x) ))
         x =  self.sigmoid( self.fc3(x) )
         
         return x
