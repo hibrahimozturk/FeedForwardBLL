@@ -36,17 +36,25 @@ We pair each english word with true translation and wrong translation.
 
 ## Experiments
 
-### adam/earlyfusion/first
+### adam/earlyfusion/first (all-bn-relu)
 Test accuracy: 86.96596669080377 precision: 0.8593530239099859 recall 0.8842257597684515 f1 0.8716119828815977
 
-### adam/earlyfusion/lrelu
+### adam/earlyfusion/lrelu (all-bn)
 Test accuracy: 88.26937002172339 precision: 0.8598639455782313 recall 0.914616497829233 f1 0.8863955119214586
 
 ### adam/earlyfusion/no-bn-lrelu
 Test accuracy: 90.65894279507603 precision: 0.9194029850746268 recall:0.8914616497829233 f1: 0.9052167523879501
 
+### adam/earlyfusion/no-bn-relu
+Test accuracy: 89.93482983345402 precision: 0.896551724137931 recall:0.9030390738060782 f1: 0.8997837058399423
+
 ### adam/shallow2-3/all-bn-lrelu
 Test accuracy: 83.7074583635047 precision: 0.8218232044198895 recall:0.8610709117221418 f1: 0.8409893992932863
+
+### adam/shallow2-3/all-bn-relu
+Test accuracy: 84.79362780593772 precision: 0.8160315374507228 recall:0.8986975397973951 f1: 0.8553719008264463
+
+
 
 ## Todo
 
