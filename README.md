@@ -15,6 +15,7 @@
 * fasttext
 * pytorch
 * matplotlib
+* scikit-learn
 
 ## Dataset
 
@@ -29,8 +30,17 @@
 We pair each english word with true translation and wrong translation.
 
 * After filtering words not included in word2vec
-  * Training pairs: 20977
-  * Validation pairs: 5322
+  * Training pairs   : 20977
+  * Validation pairs : 5322
+  * Testing pairs    : 1381
+
+## Experiments
+
+### adam/earlyfusion/first
+Test accuracy: 86.96596669080377 precision: 0.8593530239099859 recall 0.8842257597684515 f1 0.8716119828815977
+### adam/earlyfusion/lrelu
+Test accuracy: 88.26937002172339 precision: 0.8598639455782313 recall 0.914616497829233 f1 0.8863955119214586
+
 
 ## Todo
 
